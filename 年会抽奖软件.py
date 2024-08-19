@@ -334,7 +334,7 @@ class LotteryApp:
                 # 设置定时器，用于快速轮流显示名字
                 self.root.after(self.display_interval, self.get_winners)
             else:   
-                self.result_label.config(text=f"恭喜 {', '.join(self.current_winners)} 中{self.current_award}") 
+                self.result_label.config(text=f"恭喜 {', '.join(self.current_winners)} 获得{self.current_award}") 
                 # 更新中奖者名单
                 new_winners = pd.DataFrame({'Award': [self.current_award]*len(self.current_winners), 'Name': self.current_winners})
                 self.winners = pd.concat([self.winners, new_winners], ignore_index=True)
