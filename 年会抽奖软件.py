@@ -112,7 +112,7 @@ class LotteryApp:
         self.draw_button.pack(side=tk.TOP, pady=10)
         # 绑定空格和回车键按下事件到 start_pick 方法
         self.root.bind('<Return>', self.start_pick)  # 回车键
-        self.root.bind('<space>', self.start_pick)   # 空格键
+        # self.root.bind('<space>', self.start_pick)   # 空格键
 
         # 结果显示
         self.result_label = ttk.Label(self.lottery_tab, text="", font=("FangSong", 15), bootstyle=DANGER)
@@ -129,6 +129,10 @@ class LotteryApp:
         self.result_tab = ttk.Frame(self.notebook)
         self.notebook.add(self.result_tab, text='抽奖结果')
         self.create_results_table() 
+        # 撤销按钮
+        self.revoke_button = ttk.Button(self.result_tab, text="撤销选中", command=self.revoke_selected_winner)
+        self.revoke_button.pack(side=tk.BOTTOM, pady=10)
+        self.revoke_button['state'] = 'disabled'  # 禁用点击
 
 
 
@@ -156,12 +160,14 @@ class LotteryApp:
         description_string = f'''
         使用说明:\n
         1. 如果需要修改标题信息， 在上面标题信息框输入标题然后点击保存。\n
-        2. 修改 {os.path.join(self.data_folder, 'awards.xlsx')} 文件中的奖项信息。\n
-        3. 修改 {os.path.join(self.data_folder, 'participants.xlsx')} 文件中的参与抽奖人员信息。\n
-        4. 拖动滑块来修改一次抽取人数。\n
-        5. 默认仅未中奖人员参与抽奖， 如果需要所有人员参加抽奖可勾选 {self.is_all_participants_checkbutton.cget("text")} 开关。\n
-        6. 点击开始按钮（也可以按回车键）人员名单开始随机滚动， 点击结束按钮（也可以按回车键）名单停止滚动并显示中奖者名单。\n
-        7. 重启软件不会清空中奖者名单， 重新抽奖需要点击左上角的重置按钮来清空中奖者名单。
+        2. 重启软件不会清空中奖者名单， 重新抽奖需要点击左上角的重置按钮来清空中奖者名单。\n
+        3. 可以替换{self.data_folder}文件夹中的background.jpg来更换背景图片。\n        
+        4. 通过更新 {os.path.join(self.data_folder, 'awards.xlsx')} 文件来更新奖项信息。\n
+        5. 通过更新 {os.path.join(self.data_folder, 'participants.xlsx')} 文件来更新参与抽奖人员信息。\n
+        6. 拖动滑块可以修改一次抽取人数。\n
+        7. 默认仅未中奖人员参与抽奖， 如果需要所有人员参加抽奖可勾选 {self.is_all_participants_checkbutton.cget("text")} 开关。\n
+        8. 点击开始按钮（或者按回车键）人员名单开始随机滚动， 点击结束按钮（或者按回车键）名单停止滚动并显示中奖者名单。\n
+        9. 抽奖结果页可以查看或者撤销中奖名单。\n        
         '''
         self.description_label = ttk.Label(self.about_tab, text=description_string)
         self.description_label.grid(row=1, column=0, padx=10, pady=10)       
@@ -273,10 +279,11 @@ class LotteryApp:
             if os.path.exists(new_winners_path):
                 os.remove(new_winners_path)
             os.rename(winners_path, new_winners_path)
-        self.load_data()
-        self.result_label.config(text='------------------抽奖已重置！------------------')
+        self.load_data()        
         self.name_label.config(text='')
-        self.draw_button.focus_set()
+        self.result_label.config(text='')
+        # self.draw_button.focus_set()
+        messagebox.showinfo("重置", "抽奖已重置！")
 
 
     def update_award_status(self, event = None):
@@ -362,7 +369,8 @@ class LotteryApp:
 
 
     def create_results_table(self):
-        self.results_table = ttk.Treeview(self.result_tab, columns=('Award', 'Name'), show='headings',bootstyle='info')
+        # 创建结果表格
+        self.results_table = ttk.Treeview(self.result_tab, columns=('Award', 'Name'), show='headings', selectmode='browse', bootstyle='info')
         self.results_table.heading('Award', text='奖项')
         self.results_table.heading('Name', text='获奖者')
         self.results_table.column('Award', width=100)
@@ -378,8 +386,20 @@ class LotteryApp:
         self.results_table.configure(xscrollcommand=self.hsb.set)
         self.hsb.pack(side=tk.BOTTOM, fill='x')
 
+        # 绑定 Treeview 的选中事件
+        self.results_table.bind('<<TreeviewSelect>>', self.on_selection_changed)
+
         # 确保表格在Notebook中正确显示
         # self.notebook.select(self.result_tab)
+
+    def on_selection_changed(self, event):
+        # 当选中的行发生变化时，更新撤销按钮的状态
+        selection = self.results_table.selection()
+        if selection:
+            self.revoke_button['state'] = 'normal'  # 允许点击
+        else:
+            self.revoke_button['state'] = 'disabled'  # 禁用点击
+
     
     def refresh_results_if_needed(self, event):
         # 检查当前激活的标签页是否是结果页
@@ -388,13 +408,40 @@ class LotteryApp:
             self.show_results()
 
     def show_results(self):
-        # 清空结果表格
+         # 清空结果表格
         for i in self.results_table.get_children():
             self.results_table.delete(i)
         # 插入抽奖结果
         for index, row in self.winners.iterrows():
             self.results_table.insert('', 'end', values=(row['Award'], row['Name']))   
 
+    def revoke_selected_winner(self):
+        # 获取选中的行
+        selected_row = self.results_table.selection()
+        if not selected_row:
+            messagebox.showerror("错误", "请先选中一个中奖者")
+            return
+
+        # 获取选中行的奖项和名字
+        award = self.results_table.item(selected_row, 'values')[0]
+        name = self.results_table.item(selected_row, 'values')[1]
+
+        # 根据奖项和名字查找中奖者并从 winners DataFrame 中删除
+        to_revoke = self.winners[(self.winners['Award'] == award) & (self.winners['Name'] == name)]
+        if to_revoke.empty:
+            messagebox.showerror("错误", "未找到匹配的中奖者")
+            return
+
+        # 删除匹配的行
+        self.winners = self.winners.drop(to_revoke.index)
+
+        # 刷新显示结果
+        self.update_award_status()
+        self.show_results()
+
+        # 保存更新后的中奖者名单
+        self.winners.to_excel(os.path.join(self.data_folder, 'winners.xlsx'), index=False)
+        messagebox.showinfo("操作成功", f"已撤销 {award} - {name}")
 
 
          
