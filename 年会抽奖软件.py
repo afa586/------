@@ -160,7 +160,7 @@ class LotteryApp:
         3. 修改 {os.path.join(self.data_folder, 'participants.xlsx')} 文件中的参与抽奖人员信息。\n
         4. 拖动滑块来修改一次抽取人数。\n
         5. 默认仅未中奖人员参与抽奖， 如果需要所有人员参加抽奖可勾选 {self.is_all_participants_checkbutton.cget("text")} 开关。\n
-        6. 点击开始按钮（也可以按回车或者空格键）人员名单开始随机滚动， 点击结束按钮（也可以按回车或者空格键）名单停止滚动并显示中奖者名单。\n
+        6. 点击开始按钮（也可以按回车键）人员名单开始随机滚动， 点击结束按钮（也可以按回车键）名单停止滚动并显示中奖者名单。\n
         7. 重启软件不会清空中奖者名单， 重新抽奖需要点击左上角的重置按钮来清空中奖者名单。
         '''
         self.description_label = ttk.Label(self.about_tab, text=description_string)
