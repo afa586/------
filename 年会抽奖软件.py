@@ -30,8 +30,7 @@ class LotteryApp:
         self.bg_imge_path = os.path.join(self.data_folder, 'background.jpg') #背景图片路径
         self.setup_ui()
         self.root.bind("<Configure>", self.resize_background)  # 绑定窗口大小改变事件
-        
-        
+               
 
     def setup_ui(self):
         style = ttk.Style("cosmo")
@@ -44,7 +43,6 @@ class LotteryApp:
         # 创建Notebook
         self.notebook = ttk.Notebook(self.root)
         self.notebook.pack(fill='both', expand=True)
-
 
         # 创建抽奖标签页
         self.lottery_tab = ttk.Frame(self.notebook)
@@ -61,8 +59,7 @@ class LotteryApp:
         # 软件名称显示
         self.title_label = ttk.Label(self.lottery_tab, text="", font=("FangSong", 30),bootstyle='danger')
         self.title_label.pack(side=tk.TOP, pady=20)
-        self.title_label.config(text=self.title)
-       
+        self.title_label.config(text=self.title)   
 
         # 正在抽取奖项显示
         self.current_awards_label = ttk.Label(self.lottery_tab, text="", font=("FangSong", 20), bootstyle=DANGER)
@@ -73,8 +70,7 @@ class LotteryApp:
         self.awards_label = ttk.Label(self.lottery_tab, text="", font=("FangSong", 20),bootstyle='default',background='pink')
         self.awards_label.pack(side=tk.TOP, pady=10)
         # 绑定Notebook的<TabChanged>事件
-        self.notebook.bind("<<NotebookTabChanged>>", self.refresh_results_if_needed)       
-        
+        self.notebook.bind("<<NotebookTabChanged>>", self.refresh_results_if_needed)          
 
         # 奖项选择下拉菜单
         self.draw_option_row_frame = tk.Frame(self.lottery_tab)
@@ -88,17 +84,14 @@ class LotteryApp:
 
         # 待抽奖名字显示文本框
         self.name_label = ttk.Label(self.lottery_tab, text="", font=("FangSong", 25),bootstyle="danger")
-        self.name_label.pack(side=tk.TOP, pady=50)
-        
+        self.name_label.pack(side=tk.TOP, pady=50)      
 
         # 是否所有人参与， 默认只有未中奖人员参与
         self.is_all_participants_checkbutton = ttk.Checkbutton(self.lottery_tab, text="所有人员参与抽奖",
                                       variable=self.is_all_participants,
                                       offvalue=False,
                                       onvalue=True)
-        self.is_all_participants_checkbutton.pack(side=tk.TOP, pady=20)
-        
-        
+        self.is_all_participants_checkbutton.pack(side=tk.TOP, pady=20)        
 
         # 每次抽取人数输入
         self.draw_count_row_frame = tk.Frame(self.lottery_tab)
@@ -175,6 +168,7 @@ class LotteryApp:
 
         self.load_data()
 
+
     def load_config(self):
         if not os.path.exists(self.data_folder):
             os.makedirs(self.data_folder)  # 创建data文件夹
@@ -193,6 +187,7 @@ class LotteryApp:
                 config.write(config_file)
         config.read(self.config_file_path)
         self.title = config.get('Settings', 'Title')
+
 
     def save_config(self):
         config = configparser.ConfigParser()
@@ -213,9 +208,7 @@ class LotteryApp:
             self.title_label.config(text=self.title)
             messagebox.showinfo("操作成功", "标题已保存")
         else:
-            messagebox.showwarning("警告", "标题不能为空")      
-        
-       
+            messagebox.showwarning("警告", "标题不能为空")           
         
 
     def load_background_image(self):
@@ -225,6 +218,7 @@ class LotteryApp:
             self.bg_photo = ImageTk.PhotoImage(self.bg_image)
             self.bg_label = tk.Label(self.lottery_tab, image=self.bg_photo)
             self.bg_label.place(x=0, y=0, relwidth=1, relheight=1)
+
 
     def resize_background(self, event):
         if os.path.exists(self.bg_imge_path):
@@ -263,9 +257,11 @@ class LotteryApp:
         self.draw_count_entry.insert(0, str(int(int_value)))  # 插入新值
         self.draw_count_entry.config(state='readonly')  # 恢复只读状态
 
+
     def load_or_create_excel(self, file_path, data):
         if not os.path.exists(file_path):
             pd.DataFrame(data).to_excel(file_path, index=False, engine='openpyxl')
+
 
     def reset_lottery(self):
         self.update_draw_count_entry(1)
@@ -289,8 +285,8 @@ class LotteryApp:
         total_awards =  len(self.awards['Award'].unique().tolist())
         total_participants = len(self.participants['Name'].unique().tolist())
         winner_number = len(self.winners['Name'].unique().tolist())
-        possible_participants_count = 0 if self.participants_not_win.empty else len(self.participants_not_win['Name'].unique().tolist())
-        label_text += f"总奖项{total_awards},总人数{total_participants},已中奖{winner_number}人,未中奖{possible_participants_count}人"             
+        participants_not_win_count = 0 if self.participants_not_win.empty else len(self.participants_not_win['Name'].unique().tolist())
+        label_text += f"总奖项{total_awards},总人数{total_participants},已中奖{winner_number}人,未中奖{participants_not_win_count}人"             
         for index, row in self.awards.iterrows():
             award_name = row['Award']
             quota = row['Quota']
@@ -298,6 +294,7 @@ class LotteryApp:
             remain_quota = quota - used_quota
             label_text +=  f"\n{award_name} {quota}/{remain_quota}"       
         self.awards_label.config(text=label_text)
+
 
     def check_award_selected(self, event=None):
         try:
