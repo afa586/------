@@ -267,6 +267,7 @@ class LotteryApp(ttk.Frame):
         # 清空界面上的显示
         self.name_label.config(text='')
         self.result_label.config(text='')
+        self.is_all_participants.set(False)
         # self.award_option_menu.set('请选择奖项')  # 重置奖项选择下拉菜单
 
         # 重新加载数据
@@ -274,7 +275,7 @@ class LotteryApp(ttk.Frame):
 
         # 显示重置成功的消息
         messagebox.showinfo("重置", "抽奖已重置！")
-        self.draw_count_scale.focus_set()
+        self.focus_set()
 
 
     def update_award_status(self, event = None):
