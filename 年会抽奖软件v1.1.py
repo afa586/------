@@ -368,14 +368,15 @@ class LotteryApp(ttk.Frame):
 
     def start_pick(self, event = None):
         # print(f'全体人员参与开关状态： {self.is_all_participants.get()}')
-        result = self.check_award_selected()
+        result = self.check_award_selected()        
         if result['status']:
             if self.in_progress:
                 self.in_progress = False
-                self.draw_button.config(text='开始')
+                self.draw_button.config(text='开始')                
             else:
                 self.in_progress = True
                 self.draw_button.config(text='结束')
+                self.result_label.config(text=f"正在抽取{self.draw_count}名{self.current_award}")
                 self.get_winners() 
         else:
              self.result_label.config(text=f"注意：{result['message']}")   
