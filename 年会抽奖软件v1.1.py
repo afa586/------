@@ -250,6 +250,10 @@ class LotteryApp(ttk.Frame):
 
 
     def reset_lottery(self):
+        # 弹出确认框
+        confirm = messagebox.askyesno("确认", "确定要重置抽奖吗？")
+        if not confirm:
+            return  # 如果用户选择No，则不执行重置操作
          # 重置抽取人数输入框
         self.update_draw_count_entry(self.default_count)
 
