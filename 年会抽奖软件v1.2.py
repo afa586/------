@@ -7,6 +7,7 @@ import json
 import pandas as pd
 import os
 from PIL import Image, ImageTk
+import random
 
 
 class LotteryApp(ttk.Frame):
@@ -291,14 +292,15 @@ class LotteryApp(ttk.Frame):
         total_participants = len(self.participants['Name'].unique().tolist())
         winner_number = len(self.winners['Name'].unique().tolist())
         participants_not_win_count = 0 if self.participants_not_win.empty else len(self.participants_not_win['Name'].unique().tolist())
-        label_text += f"总奖项{total_awards},总人数{total_participants},已中奖{winner_number}人,未中奖{participants_not_win_count}人"             
+        label_text += f"总奖项{total_awards},总人数{total_participants},已中奖{winner_number}人,未中奖{participants_not_win_count}人"                 
+        self.awards_label.config(text=label_text)
         for index, row in self.awards.iterrows():
             award_name = row['Award']
             quota = row['Quota']
             used_quota = self.winners[(self.winners['Award'] == award_name) & (self.winners['Name'].notnull())]['Name'].count()
             remain_quota = quota - used_quota
-            label_text +=  f"\n{award_name} {quota}/{remain_quota}"       
-        self.awards_label.config(text=label_text)
+            label_text +=  f"\n{award_name} {quota}/{remain_quota}" 
+        self.results_label.config(text=label_text)
 
 
     def check_award_selected(self, event=None):
@@ -334,9 +336,10 @@ class LotteryApp(ttk.Frame):
 
     # 循环显示名字，直到再次按下抽奖按钮            
         if self.in_progress:    
-            self.selected_participants = get_sample_from.sample(n=self.draw_count)
-            self.current_winners = self.selected_participants['Name'].tolist()                                    
-            self.name_label.config(text=','.join(self.current_winners))
+            # self.selected_participants = get_sample_from.sample(n=self.draw_count)
+            # self.current_winners = self.selected_participants['Name'].tolist()                                    
+            # self.name_label.config(text=','.join(self.current_winners))
+            self.name_label.config(text=random.choice(['+', '*', 'v', '-']) * self.draw_count)
             # 设置定时器，用于快速轮流显示名字
             self.master.after(self.display_interval, self.get_winners)
         else:  
@@ -386,6 +389,12 @@ class LotteryApp(ttk.Frame):
 
 
     def setup_result_ui(self):
+        # 创建汇总信息标签
+        self.results_info = ttk.Labelframe(self.result_tab, text='抽奖结果', padding=10)        
+        self.results_info.pack(side=tk.TOP, fill=tk.X, pady=10, padx=10)
+        self.results_label = ttk.Label(self.results_info, text="", font=("FangSong", 16),bootstyle='default')
+        self.results_label.pack(side=ttk.TOP, pady=10)
+
         # 创建结果表格
         self.results_table = ttk.Treeview(self.result_tab, columns=('Award', 'Name'), show='headings', selectmode='browse', bootstyle='info')
         self.results_table.heading('Award', text='奖项')
